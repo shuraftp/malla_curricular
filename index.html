@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Malla Curricular Interactiva</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .ramo {
+      background: white;
+      padding: 15px;
+      margin: 8px 0;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ramo.locked {
+      background: #ddd;
+      color: #777;
+    }
+    .ramo label {
+      flex-grow: 1;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Curricular Interactiva</h1>
+  <div id="malla">
+
+    <!-- Aquí se irán generando los ramos -->
+    
+  </div>
+
+  <script>
+    // Definición de ramos y prerrequisitos
+    const ramos = [
+      { id: "matematicas1", nombre: "Matemáticas I", prereqs: [] },
+      { id: "programacion1", nombre: "Programación I", prereqs: [] },
+      { id: "matematicas2", nombre: "Matemáticas II", prereqs: ["matematicas1"] },
+      { id: "programacion2", nombre: "Programación II", prereqs: ["programacion1", "matematicas1"] },
+      { id: "algoritmos", nombre: "Algoritmos", prereqs: ["programacion2"] },
+      { id: "basesdatos", nombre: "Bases de Datos", prereqs: ["programacion2"] },
+      { id: "proyecto", nombre: "Proyecto Final", prereqs: ["algoritmos", "basesdatos"] }
+    ];
+
+    const mallaDiv = document.getElementById("malla");
+
+    // Estado de ramos completados
+    const completados = {};
+
+    // Crear elementos para cada ramo
+    ramos.forEach(ramo => {
+      const div = document.createElement("div");
+      div.classList.add("ramo");
+      div.id = "div-" + ramo.id;
+
+      // Check si el ramo está desbloqueado (prereqs completados)
+      const desbloqueado = ramo.prereqs.length === 0; // para el inicio
+
+      // Checkbox
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.id = ramo.id;
+      checkbox.disabled = !desbloqueado;
+
+      // Label
+      const label = document.createElement("label");
+      label.htmlFor = ramo.id;
+      label.textContent = ramo.nombre;
+
+      if (!desbloqueado) {
+        div.classList.add("locked");
+      }
+
+      div.appendChild(checkbox);
+      div.appendChild(label);
+      mallaDiv.appendChild(div);
+
+      // Guardar estado inicial
+      completados[ramo.id] = false;
+
+      // Evento cambio checkbox
+      checkbox.addEventListener("change", (e) => {
+        completados[ramo.id] = e.target.checked;
+        actualizarMalla();
+      });
+    });
+
+    // Función para verificar si los prerrequisitos están completados
+    function prerrequisitosCompletos(prereqs) {
+      return prereqs.every(id => completados[id] === true);
+    }
+
+    // Actualizar la malla para habilitar/mostrar ramos según prerrequisitos
+    function actualizarMalla() {
+      ramos.forEach(ramo => {
+        const div = document.getElementById("div-" + ramo.id);
+        const checkbox = document.getElementById(ramo.id);
+        const puedeDesbloquear = prerrequisitosCompletos(ramo.prereqs);
+
+        if (puedeDesbloquear) {
+          div.classList.remove("locked");
+          checkbox.disabled = false;
+          div.style.display = "flex"; // Mostrar ramo si estaba oculto
+        } else {
+          // Si no puede desbloquearse y no está completado, se bloquea y oculta
+          if (!completados[ramo.id]) {
+            checkbox.checked = false;
+          }
+          completados[ramo.id] = false;
+          checkbox.disabled = true;
+          div.classList.add("locked");
+          // Para que se vea el efecto de "aparecer" según quieras, puedes cambiar display a none si quieres ocultar
+          div.style.display = "none"; 
+        }
+      });
+    }
+
+    // Inicializar la malla para ocultar los que no tienen prerrequisitos cumplidos
+    actualizarMalla();
+  </script>
+</body>
+</html>
