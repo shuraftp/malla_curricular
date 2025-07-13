@@ -31,4 +31,7 @@ function renderMalla() {
   });
 }
 
-renderMalla();
+window.onload = function () {
+  renderMalla();
+};
+
